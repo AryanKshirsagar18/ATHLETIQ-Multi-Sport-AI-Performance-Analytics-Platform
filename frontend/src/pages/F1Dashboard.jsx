@@ -8,26 +8,32 @@ import f1Banner from '../assets/f1.jpg';
 export default function F1Dashboard() {
   const [drivers, setDrivers] = useState([]);
   const [youngTalent, setYoungTalent] = useState([]);
+  const [imageMap, setImageMap] = useState({});
   const [loading, setLoading] = useState(true);
 
   const f1Teams = [
-    { name: "Scuderia Ferrari", history: "The oldest and most successful Formula 1 team, competing in every world championship since 1950.", keyPlayers: "Charles Leclerc, Carlos Sainz (Current) | Michael Schumacher, Niki Lauda (Legends)", imageSrc: "/src/assets/ferrari.jpg" },
-    { name: "Red Bull Racing", history: "Founded in 2005, known for aerodynamic dominance and winning multiple consecutive championships with Vettel and Verstappen.", keyPlayers: "Max Verstappen, Sergio Perez (Current) | Sebastian Vettel, Mark Webber (Legends)", imageSrc: "/src/assets/redbull.jpg" },
-    { name: "McLaren", history: "Founded by Bruce McLaren in 1963. The second oldest active team with a rich history of legendary rivalries.", keyPlayers: "Lando Norris, Oscar Piastri (Current) | Ayrton Senna, Alain Prost, Lewis Hamilton (Legends)", imageSrc: "/src/assets/mclaren.jpg" },
-    { name: "Mercedes-AMG Petronas", history: "Dominated the turbo-hybrid era from 2014-2021, securing 8 consecutive Constructors' Championships.", keyPlayers: "Lewis Hamilton, George Russell, Kimi Antonelli (Current/Future) | Nico Rosberg, Juan Manuel Fangio (Legends)", imageSrc: "/src/assets/mercedes.jpg" },
-    { name: "Aston Martin", history: "Rebranded from Racing Point in 2021, heavily investing in infrastructure to challenge the top grid.", keyPlayers: "Fernando Alonso, Lance Stroll", imageSrc: "/src/assets/aston-martin.jpg" },
-    { name: "Williams Racing", history: "A legendary independent British team with 9 Constructors' Championships, currently in a rebuilding phase.", keyPlayers: "Alex Albon, Franco Colapinto (Current) | Nigel Mansell, Damon Hill (Legends)", imageSrc: "/src/assets/williams.jpg" },
-    { name: "Alpine", history: "The Renault works team rebranded in 2021. Known for producing both engine and chassis in-house.", keyPlayers: "Pierre Gasly, Esteban Ocon", imageSrc: "/src/assets/alpine.jpg" },
-    { name: "Visa Cash App RB", history: "The sister team to Red Bull Racing, historically serving as a junior team to develop young talent.", keyPlayers: "Yuki Tsunoda, Liam Lawson", imageSrc: "/src/assets/rb.jpg" },
-    { name: "Stake F1 Team Kick Sauber", history: "A historic Swiss independent team transitioning into the Audi works team for 2026.", keyPlayers: "Valtteri Bottas, Zhou Guanyu", imageSrc: "/src/assets/sauber.jpg" },
-    { name: "Haas F1 Team", history: "The only American team on the grid, known for their unique Ferrari-aligned technical partnership.", keyPlayers: "Nico Hulkenberg, Kevin Magnussen", imageSrc: "/src/assets/haas.jpg" }
+    { id: "f1_team_ferrari", name: "Scuderia Ferrari", history: "The oldest and most successful Formula 1 team, competing in every world championship since 1950.", keyPlayers: "Charles Leclerc, Carlos Sainz | Michael Schumacher", stats: { Titles: 16, Wins: 243, Podiums: 807 } },
+    { id: "f1_team_redbull", name: "Red Bull Racing", history: "Founded in 2005, known for aerodynamic dominance.", keyPlayers: "Max Verstappen, Sergio Perez | Sebastian Vettel", stats: { Titles: 6, Wins: 113, Podiums: 264 } },
+    { id: "f1_team_mclaren", name: "McLaren", history: "Founded by Bruce McLaren in 1963. The second oldest active team.", keyPlayers: "Lando Norris, Oscar Piastri | Ayrton Senna", stats: { Titles: 8, Wins: 183, Podiums: 501 } },
+    { id: "f1_team_mercedes", name: "Mercedes-AMG", history: "Dominated the turbo-hybrid era from 2014-2021.", keyPlayers: "Lewis Hamilton, George Russell | Nico Rosberg", stats: { Titles: 8, Wins: 125, Podiums: 289 } },
+    { id: "f1_team_aston", name: "Aston Martin", history: "Heavily investing in infrastructure to challenge the top grid.", keyPlayers: "Fernando Alonso, Lance Stroll", stats: { Titles: 0, Wins: 0, Podiums: 9 } },
+    { id: "f1_team_williams", name: "Williams Racing", history: "A legendary independent British team currently rebuilding.", keyPlayers: "Alex Albon, Franco Colapinto | Nigel Mansell", stats: { Titles: 9, Wins: 114, Podiums: 313 } },
+    { id: "f1_team_alpine", name: "Alpine", history: "The Renault works team rebranded in 2021.", keyPlayers: "Pierre Gasly, Esteban Ocon | Fernando Alonso", stats: { Titles: 2, Wins: 36, Podiums: 106 } },
+    { id: "f1_team_rb", name: "Visa Cash App RB", history: "Historically serving as a junior squad to develop young talent.", keyPlayers: "Yuki Tsunoda, Liam Lawson", stats: { Titles: 0, Wins: 2, Podiums: 5 } },
+    { id: "f1_team_sauber", name: "Kick Sauber", history: "A historic Swiss independent team transitioning into Audi.", keyPlayers: "Valtteri Bottas, Zhou Guanyu", stats: { Titles: 0, Wins: 1, Podiums: 27 } },
+    { id: "f1_team_haas", name: "Haas F1 Team", history: "The only American team on the grid.", keyPlayers: "Nico Hulkenberg, Kevin Magnussen", stats: { Titles: 0, Wins: 0, Podiums: 0 } }
   ];
 
   useEffect(() => {
-    Promise.all([fetchF1Drivers(), fetchF1YoungTalent()])
-      .then(([dRes, ytRes]) => {
+    Promise.all([
+      fetchF1Drivers(), 
+      fetchF1YoungTalent(),
+      fetch("http://localhost:8000/api/images").then(res => res.json()).catch(() => ({}))
+    ])
+      .then(([dRes, ytRes, imgData]) => {
         setDrivers(dRes.data);
         setYoungTalent(ytRes.data);
+        setImageMap(imgData);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -67,9 +73,6 @@ export default function F1Dashboard() {
             FORMULA 1 <br className="md:hidden" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-f1 via-orange-500 to-yellow-400">TELEMETRY</span>
           </h1>
-          <p className="text-base md:text-lg text-gray-300 max-w-2xl border-l-2 border-f1/50 pl-4 font-light leading-relaxed">
-            Advanced sector analysis, pace telemetry, and predictive podium routing for the grid's fastest drivers.
-          </p>
         </div>
       </div>
 
@@ -81,17 +84,12 @@ export default function F1Dashboard() {
                 <div className="p-2.5 bg-[#0d111b] rounded-xl border border-white/10 shadow-[0_0_15px_rgba(225,6,0,0.15)]"><Target className="text-f1 w-6 h-6 animate-pulse" /></div>
                 Rookie & Prospect Radar
               </h2>
-              <p className="text-sm text-gray-400 mt-2 ml-14">Tracking high-ceiling drivers and academy prospects</p>
-            </div>
-            <div className="flex gap-4 text-xs font-mono text-gray-500 bg-[#0d111b] px-4 py-2 rounded-lg border border-white/5">
-              <span className="flex items-center gap-1"><Activity className="w-3 h-3 text-f1" /> Pace Evaluated</span>
-              <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-orange-500" /> Live Data</span>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {youngTalent.slice(0, 6).map((yt, index) => (
               <div key={`yt-${yt.id}`} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
-                <AthleteCard name={yt.name} team={`${yt.team} • Age ${yt.age}`} metricLabel="Potential Score" metricValue={yt.young_talent_score} score={yt.young_talent_score} sportColor="#e10600" imageSrc={yt.image} badge="Academy Prospect" description={yt.young_talent_reason || `Future star to watch from ${yt.team}.`} />
+                <AthleteCard name={yt.name} team={`${yt.team} • Age ${yt.age}`} metricLabel="Potential Score" metricValue={yt.young_talent_score} score={yt.young_talent_score} sportColor="#e10600" imageSrc={yt.image} badge="Academy Prospect" />
               </div>
             ))}
           </div>
@@ -104,7 +102,6 @@ export default function F1Dashboard() {
                 <div className="p-2.5 bg-[#0d111b] rounded-xl border border-white/10 shadow-[0_0_15px_rgba(225,6,0,0.15)]"><Shield className="text-f1 w-6 h-6" /></div>
                 Driver Intelligence Roster
               </h2>
-              <p className="text-sm text-gray-400 mt-2 ml-14">Comprehensive grid performance indexing</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -116,19 +113,24 @@ export default function F1Dashboard() {
           </div>
         </section>
 
-        {/* F1 Teams Profile Section */}
         <section className="animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-700 fill-mode-both pt-8 border-t border-white/10">
           <h2 className="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-4 mb-8">
             <div className="p-2.5 bg-[#0d111b] rounded-xl border border-white/10 shadow-[0_0_15px_rgba(225,6,0,0.15)]"><Shield className="text-f1 w-6 h-6" /></div>
             Constructor Profiles
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {f1Teams.map((team, idx) => (
-              <TeamCard key={idx} name={team.name} history={team.history} keyPlayers={team.keyPlayers} imageSrc={team.imageSrc} themeColor="#e10600" />
+            {f1Teams.map((team) => (
+              <TeamCard 
+                key={team.id} 
+                name={team.name} 
+                history={team.history} 
+                keyPlayers={team.keyPlayers} 
+                imageSrc={imageMap[team.id]} 
+                themeColor="#e10600" 
+              />
             ))}
           </div>
         </section>
-
       </div>
     </div>
   );

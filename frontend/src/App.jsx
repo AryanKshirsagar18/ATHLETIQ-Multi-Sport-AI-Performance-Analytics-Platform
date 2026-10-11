@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import F1Dashboard from './pages/F1Dashboard';
 import CricketDashboard from './pages/CricketDashboard';
 import FootballDashboard from './pages/FootballDashboard'; // ADD THIS
-
+import CompareDashboard from './pages/CompareDashboard';
 export default function App() {
   return (
     <Router>
@@ -17,6 +17,7 @@ export default function App() {
             <Route path="/f1" element={<F1Dashboard />} />
             <Route path="/cricket" element={<CricketDashboard />} />
             <Route path="/football" element={<FootballDashboard />} /> {/* ADD THIS */}
+            <Route path="/compare" element={<CompareDashboard />} />
           </Routes>
         </main>
       </div>
