@@ -3,10 +3,17 @@ import { fetchF1Drivers, fetchCricketPlayers, fetchFootballScorers } from '../se
 import PerformanceChart from '../components/PerformanceChart';
 import { Swords, Activity, Users, User, Zap, ChevronDown } from 'lucide-react';
 
+// --- UNIVERSAL ID EXTRACTOR ---
+// Prevents crashes regardless of how the database names its primary keys
+const getId = (ent) => {
+  if (!ent) return '';
+  return String(ent.id || ent._id || ent.driver_id || ent.player_id || ent.name);
+};
+
 // --- CUSTOM CINEMATIC DROPDOWN COMPONENT ---
 const CinematicDropdown = ({ value, onChange, options, themeColor, align = 'left' }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find(p => String(p.id || p.driver_id || p._id) === String(value));
+  const selectedOption = options.find(p => getId(p) === String(value));
 
   return (
     <div className="relative w-full z-50">
@@ -27,7 +34,7 @@ const CinematicDropdown = ({ value, onChange, options, themeColor, align = 'left
           </span>
           {selectedOption && (
             <span className="text-[9px] text-gray-500 font-mono uppercase tracking-widest mt-0.5" style={{ color: isOpen ? themeColor : '' }}>
-              {selectedOption.team}
+              {selectedOption.team || selectedOption.nationality}
             </span>
           )}
         </div>
@@ -39,7 +46,7 @@ const CinematicDropdown = ({ value, onChange, options, themeColor, align = 'left
       {isOpen && (
         <div className="absolute top-full mt-3 w-full max-h-72 overflow-y-auto z-50 bg-[#0d111b]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full animate-in fade-in slide-in-from-top-2 duration-200">
           {options.map((opt) => {
-            const optId = String(opt.id || opt.driver_id || opt._id);
+            const optId = getId(opt);
             const isSelected = optId === String(value);
             return (
               <div
@@ -56,7 +63,7 @@ const CinematicDropdown = ({ value, onChange, options, themeColor, align = 'left
                   {opt.name}
                 </span>
                 <span className="text-[9px] text-gray-600 font-mono uppercase tracking-widest mt-1">
-                  {opt.team}
+                  {opt.team || opt.nationality}
                 </span>
               </div>
             );
@@ -147,14 +154,13 @@ export default function CompareDashboard() {
           data = teamDataStore[sport] || [];
         }
         
-        // UPDATED: Production Render URL
         const images = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/images").then(res => res.json()).catch(() => ({}));
         setEntities(data);
         setImageMap(images);
         
         if (data && data.length >= 2) {
-          setEntityAId(String(data[0].id || data[0].driver_id || data[0]._id));
-          setEntityBId(String(data[1].id || data[1].driver_id || data[1]._id));
+          setEntityAId(getId(data[0]));
+          setEntityBId(getId(data[1]));
         }
       } catch (error) {
         console.error("Data load failed:", error);
@@ -164,17 +170,17 @@ export default function CompareDashboard() {
     setAiInsight('');
   }, [sport, mode]);
 
-  // Robust string-based ID matching to prevent undefined crashes
-  const entityA = entities.find(p => String(p.id || p.driver_id || p._id) === String(entityAId));
-  const entityB = entities.find(p => String(p.id || p.driver_id || p._id) === String(entityBId));
+  const entityA = entities.find(p => getId(p) === String(entityAId));
+  const entityB = entities.find(p => getId(p) === String(entityBId));
   const fallbackImage = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80";
 
   const getStats = (p) => {
     if (!p) return { val1: 0, val2: 0, score: 0 };
-    if (mode === 'teams') return { val1: p.val1, val2: p.val2, score: p.score };
-    if (sport === 'f1') return { val1: p.points, val2: p.age, score: p.performance_score };
-    if (sport === 'cricket') return { val1: p.runs || p.wickets, val2: p.batting_avg || p.bowling_avg, score: p.performance_score };
-    if (sport === 'football') return { val1: p.goals, val2: p.assists, score: p.performance_score };
+    if (mode === 'teams') return { val1: p.val1 || 0, val2: p.val2 || 0, score: p.score || 0 };
+    if (sport === 'f1') return { val1: p.points || 0, val2: p.age || 0, score: p.performance_score || 0 };
+    if (sport === 'cricket') return { val1: p.runs || p.wickets || 0, val2: p.batting_avg || p.bowling_avg || 0, score: p.performance_score || 0 };
+    if (sport === 'football') return { val1: p.goals || 0, val2: p.assists || 0, score: p.performance_score || 0 };
+    return { val1: 0, val2: 0, score: 0 };
   };
 
   const statsA = getStats(entityA);
@@ -212,7 +218,6 @@ export default function CompareDashboard() {
         val2: Number(statsA.val2) || 0 
       };
 
-      // UPDATED: Production Render URL
       const res = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/ai/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,8 +236,9 @@ export default function CompareDashboard() {
   };
 
   const StatBar = ({ label, valA, valB, maxVal }) => {
-    const pctA = Math.min(100, (valA / maxVal) * 100) || 0;
-    const pctB = Math.min(100, (valB / maxVal) * 100) || 0;
+    const safeMax = Math.max(maxVal, 1); // Prevent division by zero
+    const pctA = Math.min(100, (valA / safeMax) * 100) || 0;
+    const pctB = Math.min(100, (valB / safeMax) * 100) || 0;
     const isAWinner = valA >= valB;
     return (
       <div className="mb-6 group/stat">
@@ -360,11 +366,11 @@ export default function CompareDashboard() {
                   style={{ borderColor: statsA.score >= statsB.score ? activeTheme.color : '#333' }}
                 >
                   <div className="absolute inset-0 border-[4px] border-transparent rounded-full animate-spin-slow pointer-events-none" style={{ borderTopColor: statsA.score >= statsB.score ? activeTheme.color : 'transparent' }} />
-                  <img src={imageMap[entityA.id || entityA.driver_id || entityA._id] || fallbackImage} alt={entityA.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[20%] group-hover:grayscale-0" />
+                  <img src={imageMap[getId(entityA)] || fallbackImage} alt={entityA.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[20%] group-hover:grayscale-0" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </div>
                 <h2 className="text-2xl font-black tracking-tight">{entityA.name}</h2>
-                <p className="text-gray-500 text-[11px] font-mono tracking-widest mt-1 uppercase">{entityA.team}</p>
+                <p className="text-gray-500 text-[11px] font-mono tracking-widest mt-1 uppercase">{entityA.team || entityA.nationality}</p>
                 <div className="mt-4 inline-flex flex-col items-center">
                   <span className="text-[9px] text-gray-600 font-mono tracking-widest uppercase mb-1">Score</span>
                   <span className="text-3xl font-black" style={{ color: statsA.score >= statsB.score ? activeTheme.color : 'white' }}>{statsA.score}</span>
@@ -390,11 +396,11 @@ export default function CompareDashboard() {
                   style={{ borderColor: statsB.score >= statsA.score ? activeTheme.color : '#333' }}
                 >
                   <div className="absolute inset-0 border-[4px] border-transparent rounded-full animate-spin-slow pointer-events-none" style={{ borderTopColor: statsB.score >= statsA.score ? activeTheme.color : 'transparent' }} />
-                  <img src={imageMap[entityB.id || entityB.driver_id || entityB._id] || fallbackImage} alt={entityB.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[20%] group-hover:grayscale-0" />
+                  <img src={imageMap[getId(entityB)] || fallbackImage} alt={entityB.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[20%] group-hover:grayscale-0" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </div>
                 <h2 className="text-2xl font-black tracking-tight">{entityB.name}</h2>
-                <p className="text-gray-500 text-[11px] font-mono tracking-widest mt-1 uppercase">{entityB.team}</p>
+                <p className="text-gray-500 text-[11px] font-mono tracking-widest mt-1 uppercase">{entityB.team || entityB.nationality}</p>
                 <div className="mt-4 inline-flex flex-col items-center">
                   <span className="text-[9px] text-gray-600 font-mono tracking-widest uppercase mb-1">Score</span>
                   <span className="text-3xl font-black" style={{ color: statsB.score >= statsA.score ? activeTheme.color : 'white' }}>{statsB.score}</span>
