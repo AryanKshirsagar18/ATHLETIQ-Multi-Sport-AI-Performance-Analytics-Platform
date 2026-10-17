@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { fetchF1Drivers, fetchF1YoungTalent } from '../services/api';
 import AthleteCard from '../components/AthleteCard';
 import TeamCard from '../components/TeamCard';
-import { Target, Activity, Shield, Map, Timer, MapPin, Flag, Calendar, ChevronRight } from 'lucide-react';
+import { Target, Activity, Shield, Map, Timer, MapPin, Flag } from 'lucide-react';
 import f1Banner from '../assets/f1.jpg';
 
-// Complete 2024 F1 Calendar Data
+// Complete 2024 F1 Calendar Offline Data
 const f1Calendar2024 = [
   { round: 1, country: "BHR", name: "Bahrain Grand Prix", circuit: "Bahrain International Circuit", length: "5.412", laps: 57, record: "1:31.447", s1: "28.451", s2: "39.102", s3: "22.894" },
   { round: 2, country: "KSA", name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche Circuit", length: "6.174", laps: 50, record: "1:30.734", s1: "32.112", s2: "29.588", s3: "28.910" },
@@ -38,8 +38,9 @@ export default function F1Dashboard() {
   const [youngTalent, setYoungTalent] = useState([]);
   const [imageMap, setImageMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedRound, setSelectedRound] = useState(0); // For calendar selection
-
+  
+  // State for the 2024 calendar selection
+  const [selectedRound, setSelectedRound] = useState(0); 
   const currentTrack = f1Calendar2024[selectedRound];
 
   const f1Teams = [
@@ -189,7 +190,7 @@ export default function F1Dashboard() {
           </div>
         </section>
 
-        {/* 2024 Live Race Control & Circuit Telemetry */}
+        {/* === UPDATED: 2024 Live Race Control & Circuit Telemetry === */}
         <section className="animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-700 fill-mode-both pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-4 border-b border-white/5 gap-4">
             <div>
@@ -201,14 +202,14 @@ export default function F1Dashboard() {
                 2024 Circuit Telemetry & Sector Data
               </h2>
               <p className="text-gray-500 text-xs font-mono tracking-widest uppercase mt-3 ml-2 flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Offline Data Mode Connected
+                <span className="w-2 h-2 bg-[#00f59b] rounded-full animate-pulse" /> Offline 2024 Calendar Loaded
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Circuit Selector & Display */}
+            {/* Circuit Selector & Display (Left Side) */}
             <div className="lg:col-span-2 glass-card bg-black/60 border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-inner flex flex-col min-h-[400px]">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#e10600]/10 blur-[100px] pointer-events-none" />
               
@@ -278,7 +279,7 @@ export default function F1Dashboard() {
               </div>
             </div>
 
-            {/* Live Timing Tower */}
+            {/* Live Timing Tower (Right Side) */}
             <div className="glass-card bg-black/60 border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-inner flex flex-col">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
                 <Timer className="w-5 h-5 text-[#e10600]" />
@@ -293,7 +294,7 @@ export default function F1Dashboard() {
                 ].map((s, i) => (
                   <div key={i} className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5 transition-all duration-300 hover:bg-white/10">
                     <span className="text-xs text-gray-400 font-mono tracking-widest">{s.sector}</span>
-                    <span className={`text-lg font-bold font-mono ${s.status === 'purple' ? 'text-purple-400' : s.status === 'green' ? 'text-green-400' : 'text-yellow-400'}`}>
+                    <span className={`text-lg font-bold font-mono ${s.status === 'purple' ? 'text-purple-400' : s.status === 'green' ? 'text-[#00f59b]' : 'text-yellow-400'}`}>
                       {s.time}
                     </span>
                   </div>
@@ -301,7 +302,9 @@ export default function F1Dashboard() {
               </div>
 
               <div className="mt-6 pt-4 border-t border-white/10 text-center">
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">Status: <span className="text-green-400">Offline Dataset Loaded</span></span>
+                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">
+                  Live Timing Status: <span className="text-[#00f59b]">Simulated</span>
+                </span>
               </div>
             </div>
           </div>
