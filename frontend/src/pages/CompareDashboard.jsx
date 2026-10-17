@@ -139,7 +139,7 @@ export default function CompareDashboard() {
           data = teamDataStore[sport] || [];
         }
         
-        const images = await fetch("http://localhost:8000/api/images").then(res => res.json()).catch(() => ({}));
+        const images = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com").then(res => res.json()).catch(() => ({}));
         setEntities(data);
         setImageMap(images);
         
@@ -202,7 +202,7 @@ export default function CompareDashboard() {
         val2: Number(statsA.val2) || 0 
       };
 
-      const res = await fetch("http://localhost:8000/api/ai/analyze", {
+      const res = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/ai/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

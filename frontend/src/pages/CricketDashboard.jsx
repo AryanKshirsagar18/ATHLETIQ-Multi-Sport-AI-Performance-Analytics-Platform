@@ -28,7 +28,7 @@ export default function CricketDashboard() {
     Promise.all([
       fetchCricketPlayers(), 
       fetchCricketYoungTalent(),
-      fetch("http://localhost:8000/api/images").then(res => res.json()).catch(() => ({}))
+      fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com").then(res => res.json()).catch(() => ({}))
     ])
       .then(([pRes, ytRes, imgData]) => {
         setPlayers(pRes.data);

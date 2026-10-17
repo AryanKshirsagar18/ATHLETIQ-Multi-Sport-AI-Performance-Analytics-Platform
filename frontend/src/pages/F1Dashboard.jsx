@@ -28,7 +28,7 @@ export default function F1Dashboard() {
     Promise.all([
       fetchF1Drivers(), 
       fetchF1YoungTalent(),
-      fetch("http://localhost:8000/api/images").then(res => res.json()).catch(() => ({}))
+      fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com").then(res => res.json()).catch(() => ({}))
     ])
       .then(([dRes, ytRes, imgData]) => {
         setDrivers(dRes.data);
