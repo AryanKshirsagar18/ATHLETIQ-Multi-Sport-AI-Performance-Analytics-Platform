@@ -131,9 +131,18 @@ export default function CompareDashboard() {
       let data = [];
       try {
         if (mode === 'athletes') {
-          if (sport === 'f1') data = (await fetchF1Drivers()).data || [];
-          if (sport === 'cricket') data = (await fetchCricketPlayers()).data || [];
-          if (sport === 'football') data = (await fetchFootballScorers()).data || [];
+          if (sport === 'f1') {
+            const res = await fetchF1Drivers();
+            data = res?.data || res || [];
+          }
+          if (sport === 'cricket') {
+            const res = await fetchCricketPlayers();
+            data = res?.data || res || [];
+          }
+          if (sport === 'football') {
+            const res = await fetchFootballScorers();
+            data = res?.data || res || [];
+          }
         } else {
           data = teamDataStore[sport] || [];
         }
@@ -143,7 +152,7 @@ export default function CompareDashboard() {
         setEntities(data);
         setImageMap(images);
         
-        if (data.length >= 2) {
+        if (data && data.length >= 2) {
           setEntityAId(String(data[0].id || data[0].driver_id || data[0]._id));
           setEntityBId(String(data[1].id || data[1].driver_id || data[1]._id));
         }
