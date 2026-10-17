@@ -31,9 +31,9 @@ export default function F1Dashboard() {
       fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/images").then(res => res.json()).catch(() => ({}))
     ])
       .then(([dRes, ytRes, imgData]) => {
-        setDrivers(dRes.data);
-        setYoungTalent(ytRes.data);
-        setImageMap(imgData);
+        setDrivers(dRes?.data || dRes || []);
+        setYoungTalent(ytRes?.data || ytRes || []);
+        setImageMap(imgData || {});
       })
       .finally(() => setLoading(false));
   }, []);
@@ -111,7 +111,7 @@ export default function F1Dashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {youngTalent.slice(0, 6).map((yt, index) => (
-              <div key={`yt-${yt.id}`} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
+              <div key={`yt-${yt.id || index}`} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
                 <AthleteCard 
                   name={yt.name} 
                   team={`${yt.team} | Age ${yt.age}`} 
@@ -142,7 +142,7 @@ export default function F1Dashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {drivers.map((d, index) => (
-              <div key={d.id} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${(index % 9) * 50}ms` }}>
+              <div key={d.id || index} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${(index % 9) * 50}ms` }}>
                 <AthleteCard 
                   name={d.name} 
                   team={d.team} 
