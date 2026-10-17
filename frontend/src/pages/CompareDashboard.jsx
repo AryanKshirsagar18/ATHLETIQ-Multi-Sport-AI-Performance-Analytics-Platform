@@ -3,6 +3,71 @@ import { fetchF1Drivers, fetchCricketPlayers, fetchFootballScorers } from '../se
 import PerformanceChart from '../components/PerformanceChart';
 import { Swords, Activity, Users, User, Zap, ChevronDown } from 'lucide-react';
 
+// --- CUSTOM CINEMATIC DROPDOWN COMPONENT ---
+const CinematicDropdown = ({ value, onChange, options, themeColor, align = 'left' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find(p => String(p.id || p.driver_id || p._id) === String(value));
+
+  return (
+    <div className="relative w-full z-50">
+      {/* Invisible overlay to close dropdown when clicking outside */}
+      {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+      
+      {/* Dropdown Trigger Button */}
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 flex justify-between items-center cursor-pointer transition-all duration-300 relative z-50 group"
+        style={{ boxShadow: isOpen ? `0 0 20px ${themeColor}20` : 'none', borderColor: isOpen ? themeColor + '50' : '' }}
+      >
+        {align === 'right' && <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />}
+        
+        <div className={`flex flex-col ${align === 'right' ? 'items-end' : 'items-start'}`}>
+          <span className="text-white text-sm font-bold tracking-wide group-hover:text-gray-200 transition-colors">
+            {selectedOption ? selectedOption.name : 'Select Profile...'}
+          </span>
+          {selectedOption && (
+            <span className="text-[9px] text-gray-500 font-mono uppercase tracking-widest mt-0.5" style={{ color: isOpen ? themeColor : '' }}>
+              {selectedOption.team}
+            </span>
+          )}
+        </div>
+
+        {align === 'left' && <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />}
+      </div>
+
+      {/* Expanded Menu Options */}
+      {isOpen && (
+        <div className="absolute top-full mt-3 w-full max-h-72 overflow-y-auto z-50 bg-[#0d111b]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full animate-in fade-in slide-in-from-top-2 duration-200">
+          {options.map((opt) => {
+            const optId = String(opt.id || opt.driver_id || opt._id);
+            const isSelected = optId === String(value);
+            return (
+              <div
+                key={optId}
+                onClick={() => { onChange(optId); setIsOpen(false); }}
+                className={`p-4 cursor-pointer transition-all duration-200 flex flex-col ${align === 'right' ? 'items-end text-right' : 'items-start text-left'} ${isSelected ? 'bg-white/5' : 'hover:bg-white/5'}`}
+                style={isSelected ? { 
+                  borderLeft: align === 'left' ? `2px solid ${themeColor}` : 'none', 
+                  borderRight: align === 'right' ? `2px solid ${themeColor}` : 'none',
+                  backgroundColor: themeColor + '10'
+                } : {}}
+              >
+                <span className={`text-sm font-bold tracking-wide ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                  {opt.name}
+                </span>
+                <span className="text-[9px] text-gray-600 font-mono uppercase tracking-widest mt-1">
+                  {opt.team}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- MAIN DASHBOARD COMPONENT ---
 export default function CompareDashboard() {
   const [sport, setSport] = useState('f1');
   const [mode, setMode] = useState('athletes'); 
@@ -90,7 +155,6 @@ export default function CompareDashboard() {
     setAiInsight('');
   }, [sport, mode]);
 
-  // Robust string-based ID matching to prevent undefined crashes
   const entityA = entities.find(p => String(p.id || p.driver_id || p._id) === String(entityAId));
   const entityB = entities.find(p => String(p.id || p.driver_id || p._id) === String(entityBId));
   const fallbackImage = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80";
@@ -124,7 +188,6 @@ export default function CompareDashboard() {
 
   const chartData = useMemo(() => generateChartData(), [entityAId, entityBId, mode, sport]);
 
-  // Bulletproof AI Fetch Call
   const generateInsight = async () => {
     if (!entityA) return;
     setIsAnalyzing(true);
@@ -220,7 +283,7 @@ export default function CompareDashboard() {
           </h1>
 
           {/* Futuristic Controls */}
-          <div className="flex flex-col md:flex-row justify-center items-center gap-6 mb-4 relative z-50">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 mb-4 relative z-40">
             <div className="flex bg-black/40 p-1.5 rounded-full border border-white/5 shadow-inner backdrop-blur-md">
               <button onClick={() => setMode('athletes')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${mode === 'athletes' ? 'bg-white/10 text-white shadow-md' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}><User className="w-4 h-4"/> Athletes</button>
               <button onClick={() => setMode('teams')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${mode === 'teams' ? 'bg-white/10 text-white shadow-md' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}><Users className="w-4 h-4"/> Teams</button>
@@ -244,29 +307,35 @@ export default function CompareDashboard() {
         </div>
 
         {/* Comparison Arena */}
-        <div className="glass-card bg-[#0d111b]/80 border border-white/5 rounded-[2rem] p-6 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl animate-in zoom-in-95 duration-1000 delay-300 relative overflow-hidden">
+        <div className="glass-card bg-[#0d111b]/80 border border-white/5 rounded-[2rem] p-6 md:p-12 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl animate-in zoom-in-95 duration-1000 delay-300 relative overflow-visible">
           
           <div className="absolute top-0 left-0 w-full h-1 opacity-50" style={{ backgroundColor: activeTheme.color }} />
 
-          {/* Selectors - Adjusted z-index for clickability */}
+          {/* CINEMATIC CUSTOM SELECTORS */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-16 relative z-50">
-            <div className="w-full md:w-1/3 relative group">
-              <select value={entityAId} onChange={(e) => setEntityAId(e.target.value)} className="w-full appearance-none bg-black/60 border border-white/10 rounded-2xl p-4 text-white text-sm font-bold tracking-wide focus:outline-none focus:border-white/30 transition-colors cursor-pointer relative z-50">
-                {entities.map(p => <option key={p.id || p.driver_id || p._id} value={p.id || p.driver_id || p._id}>{p.name} ({p.team})</option>)}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none group-hover:text-white transition-colors z-50" />
+            <div className="w-full md:w-1/3">
+              <CinematicDropdown 
+                value={entityAId} 
+                onChange={setEntityAId} 
+                options={entities} 
+                themeColor={activeTheme.color}
+                align="left"
+              />
             </div>
             
-            <div className="w-14 h-14 rounded-full bg-black/80 border border-white/10 flex items-center justify-center font-black text-xl text-gray-600 shadow-inner relative">
+            <div className="w-14 h-14 rounded-full bg-black/80 border border-white/10 flex items-center justify-center font-black text-xl text-gray-600 shadow-inner relative flex-shrink-0">
               <div className="absolute inset-0 rounded-full animate-ping opacity-10" style={{ backgroundColor: activeTheme.color }} />
               VS
             </div>
 
-            <div className="w-full md:w-1/3 relative group">
-              <select value={entityBId} onChange={(e) => setEntityBId(e.target.value)} className="w-full appearance-none bg-black/60 border border-white/10 rounded-2xl p-4 text-white text-sm font-bold tracking-wide focus:outline-none focus:border-white/30 transition-colors cursor-pointer text-left md:text-right relative z-50" dir="rtl">
-                {entities.map(p => <option key={p.id || p.driver_id || p._id} value={p.id || p.driver_id || p._id}>{p.name} ({p.team})</option>)}
-              </select>
-              <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none group-hover:text-white transition-colors z-50" />
+            <div className="w-full md:w-1/3">
+              <CinematicDropdown 
+                value={entityBId} 
+                onChange={setEntityBId} 
+                options={entities} 
+                themeColor={activeTheme.color}
+                align="right"
+              />
             </div>
           </div>
 
@@ -348,7 +417,7 @@ export default function CompareDashboard() {
                     <button 
                       onClick={generateInsight}
                       disabled={isAnalyzing}
-                      className="relative z-50 px-8 py-3 rounded-full text-xs font-bold text-black uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100 cursor-pointer pointer-events-auto"
+                      className="relative z-10 px-8 py-3 rounded-full text-xs font-bold text-black uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100 cursor-pointer"
                       style={{ backgroundColor: activeTheme.color }}
                     >
                       {isAnalyzing ? "Processing..." : "Initialize Engine"}
