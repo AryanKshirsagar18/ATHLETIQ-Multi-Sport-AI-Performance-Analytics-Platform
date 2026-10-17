@@ -31,9 +31,9 @@ export default function CricketDashboard() {
       fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/images").then(res => res.json()).catch(() => ({}))
     ])
       .then(([pRes, ytRes, imgData]) => {
-        setPlayers(pRes.data);
-        setYoungTalent(ytRes.data);
-        setImageMap(imgData);
+        setPlayers(pRes?.data || pRes || []);
+        setYoungTalent(ytRes?.data || ytRes || []);
+        setImageMap(imgData || {});
       })
       .finally(() => setLoading(false));
   }, []);
@@ -111,7 +111,7 @@ export default function CricketDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {youngTalent.slice(0, 6).map((yt, index) => (
-              <div key={`yt-${yt.id}`} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
+              <div key={`yt-${yt.id || index}`} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${index * 100}ms` }}>
                 <AthleteCard 
                   name={yt.name} 
                   team={`${yt.team} | Age ${yt.age}`} 
@@ -142,7 +142,7 @@ export default function CricketDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {players.map((p, index) => (
-              <div key={p.id} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${(index % 9) * 50}ms` }}>
+              <div key={p.id || index} className="animate-in zoom-in-95 fade-in duration-500 fill-mode-both" style={{ animationDelay: `${(index % 9) * 50}ms` }}>
                 <AthleteCard 
                   name={p.name} 
                   team={p.team} 
