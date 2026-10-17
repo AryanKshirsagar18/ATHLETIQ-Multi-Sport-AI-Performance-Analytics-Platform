@@ -67,7 +67,6 @@ const CinematicDropdown = ({ value, onChange, options, themeColor, align = 'left
   );
 };
 
-// --- MAIN DASHBOARD COMPONENT ---
 export default function CompareDashboard() {
   const [sport, setSport] = useState('f1');
   const [mode, setMode] = useState('athletes'); 
@@ -139,7 +138,8 @@ export default function CompareDashboard() {
           data = teamDataStore[sport] || [];
         }
         
-        const images = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com").then(res => res.json()).catch(() => ({}));
+        // UPDATED: Production Render URL
+        const images = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/images").then(res => res.json()).catch(() => ({}));
         setEntities(data);
         setImageMap(images);
         
@@ -155,6 +155,7 @@ export default function CompareDashboard() {
     setAiInsight('');
   }, [sport, mode]);
 
+  // Robust string-based ID matching to prevent undefined crashes
   const entityA = entities.find(p => String(p.id || p.driver_id || p._id) === String(entityAId));
   const entityB = entities.find(p => String(p.id || p.driver_id || p._id) === String(entityBId));
   const fallbackImage = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80";
@@ -202,6 +203,7 @@ export default function CompareDashboard() {
         val2: Number(statsA.val2) || 0 
       };
 
+      // UPDATED: Production Render URL
       const res = await fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/ai/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -417,7 +419,7 @@ export default function CompareDashboard() {
                     <button 
                       onClick={generateInsight}
                       disabled={isAnalyzing}
-                      className="relative z-10 px-8 py-3 rounded-full text-xs font-bold text-black uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100 cursor-pointer"
+                      className="relative z-50 px-8 py-3 rounded-full text-xs font-bold text-black uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100 cursor-pointer pointer-events-auto"
                       style={{ backgroundColor: activeTheme.color }}
                     >
                       {isAnalyzing ? "Processing..." : "Initialize Engine"}

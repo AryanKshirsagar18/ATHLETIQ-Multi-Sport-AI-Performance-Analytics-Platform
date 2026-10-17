@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchCricketPlayers, fetchCricketYoungTalent } from '../services/api';
 import AthleteCard from '../components/AthleteCard';
 import TeamCard from '../components/TeamCard';
-import { Target, Zap, Activity, Shield } from 'lucide-react';
+import { Target, Activity, Shield } from 'lucide-react';
 import cricketBanner from '../assets/cricket.jpg';
 
 export default function CricketDashboard() {
@@ -28,7 +28,7 @@ export default function CricketDashboard() {
     Promise.all([
       fetchCricketPlayers(), 
       fetchCricketYoungTalent(),
-      fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com").then(res => res.json()).catch(() => ({}))
+      fetch("https://athletiq-multi-sport-ai-performance-t4h1.onrender.com/api/images").then(res => res.json()).catch(() => ({}))
     ])
       .then(([pRes, ytRes, imgData]) => {
         setPlayers(pRes.data);
